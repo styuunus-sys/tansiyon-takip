@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Tansiyon ve İlaç Takibi</title>
+<style>
+:root{--p:#2563eb;--bg:#f8fafc;--card:#fff;--tx:#1e293b;--mu:#64748b;--bd:#e2e8f0;--rd:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Roboto,Arial,sans-serif}
+body{background:var(--bg);color:var(--tx);max-width:600px;margin:0 auto;padding:14px 14px 40px}
+h1{font-size:1.3rem;color:var(--p);text-align:center;margin:8px 0 14px}
+h2{font-size:1rem;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:.8rem;font-weight:600;margin-bottom:4px}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;font-size:1rem;background:#fff;color:var(--tx)}
+.g{margin-bottom:10px}.r{display:flex;gap:8px}.r>*{flex:1}
+button{background:var(--p);color:#fff;border:0;border-radius:8px;padding:11px;font-size:.95rem;font-weight:600;cursor:pointer;width:100%}
+button.s{background:#64748b}button.sm{width:auto;padding:5px 9px;font-size:.78rem;margin-left:4px}button.d{background:var(--rd)}button.ok{background:#16a34a}
+.tabs{display:flex;gap:6px;margin-bottom:14px}.tabs button{background:#e2e8f0;color:var(--tx);padding:9px 4px;font-size:.82rem}.tabs button.on{background:var(--p);color:#fff}
+.pane{display:none}.pane.on{display:block}
+.li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:.9rem}.li:last-child{border:0}
+.li small{color:var(--mu)}.a{white-space:nowrap}
+.b{padding:1px 7px;border-radius:6px;font-size:.72rem;font-weight:700}.n{background:#dcfce7;color:#166534}.h{background:#fee2e2;color:#991b1b}.l{background:#fef9c3;color:#854d0e}
+canvas{width:100%;height:260px;display:block}
+.lg{display:flex;gap:12px;font-size:.8rem;margin-top:8px;flex-wrap:wrap}.lg span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;background:var(--c)}
+.em{color:var(--mu);text-align:center;padding:12px;font-size:.9rem}
+.ex button{margin-bottom:8px}
+.ft{font-size:.75rem;color:var(--mu);text-align:center;margin-top:10px}
+#pa{display:none}
+@media print{body>*:not(#pa){display:none!important}#pa{display:block!important}#pa table{border-collapse:collapse;width:100%;font-size:11px}#pa td,#pa th{border:1px solid #999;padding:4px;text-align:left}}
+</style></head>
+<body>
+<h1>🩺 Tansiyon ve İlaç Takibi</h1>
+<div class="tabs" id="tabs">
+<button data-t="bp" class="on">Tansiyon</button><button data-t="md">İlaçlar</button><button data-t="gr">Grafik</button><button data-t="ex">Rapor</button></div>
+
+<section id="bp" class="pane on">
+<div class="card"><h2>Tansiyon kaydı</h2>
+<div class="g"><label>Tarih ve saat</label><input type="datetime-local" id="bpT"></div>
+<div class="r g"><div><label>Büyük (sistolik)</label><input type="number" id="bpS" inputmode="numeric"></div><div><label>Küçük (diyastolik)</label><input type="number" id="bpD" inputmode="numeric"></div><div><label>Nabız</label><input type="number" id="bpP" inputmode="numeric"></div></div>
+<div class="g"><label>Not</label><input id="bpN" placeholder="Örn: sabah, aç karnına"></div>
+<div class="r"><button id="bpBtn" onclick="sub('bp')">Kaydet</button><button class="s" id="bpX" hidden onclick="reset('bp')">Vazgeç</button></div></div>
+<div class="card"><h2>Kayıtlar</h2><div id="bpList"></div></div></section>
+
+<section id="md" class="pane">
+<div class="card"><h2>İlaç tanımı</h2>
+<div class="g"><label>İlaç adı</label><input id="mN"></div>
+<div class="r g"><div><label>Doz</label><input id="mD" placeholder="Örn: 1 tablet"></div><div><label>Saatler</label><input id="mS" placeholder="08:00, 20:00"></div></div>
+<div class="g"><label>Not</label><input id="mC" placeholder="Örn: yemekten sonra"></div>
+<div class="r"><button id="mBtn" onclick="sub('med')">İlaç ekle</button><button class="s" id="mX" hidden onclick="reset('med')">Vazgeç</button></div></div>
+<div class="card"><h2>İlaçlarım</h2><div id="mList"></div></div>
+<div class="card"><h2>İlaç alım kaydı</h2>
+<div class="g"><label>İlaç</label><select id="lM"></select></div>
+<div class="g"><label>Tarih ve saat</label><input type="datetime-local" id="lT"></div>
+<div class="g"><label>Not</label><input id="lN"></div>
+<div class="r"><button id="lBtn" onclick="sub('log')">Kaydet</button><button class="s" id="lX" hidden onclick="reset('log')">Vazgeç</button></div></div>
+<div class="card"><h2>Alım geçmişi</h2><div id="lList"></div></div></section>
+
+<section id="gr" class="pane"><div class="card"><h2>Tansiyon grafiği</h2>
+<div class="g"><select id="rng"><option value="7">Son 7 kayıt</option><option value="30" selected>Son 30 kayıt</option><option value="90">Son 90 kayıt</option><option value="0">Tümü</option></select></div>
+<canvas id="cv"></canvas>
+<div class="lg"><span style="--c:#ef4444">Büyük</span><span style="--c:#2563eb">Küçük</span><span style="--c:#16a34a">Nabız</span></div>
+<p class="ft" id="avg"></p></div></section>
+
+<section id="ex" class="pane"><div class="card ex"><h2>Rapor ve yedek</h2>
+<button onclick="exTxt()">Metin (.txt) olarak indir</button>
+<button onclick="exDoc()">Word (.doc) olarak indir</button>
+<button onclick="exPdf()">PDF olarak kaydet (yazdır)</button>
+<button class="s" onclick="exJson()">Yedek al (.json)</button>
+<button class="s" onclick="$('#imp').click()">Yedekten yükle</button>
+<input type="file" id="imp" accept=".json,application/json" hidden></div></section>
+
+<p class="ft">Veriler yalnızca bu cihazda saklanır. Bu uygulama tıbbi tavsiye yerine geçmez.</p>
+<div id="pa"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+let db={bp:[],meds:[],logs:[]};
+try{db=Object.assign(db,JSON.parse(localStorage.getItem('tt')||'{}'))}catch(e){}
+const store=()=>{try{localStorage.setItem('tt',JSON.stringify(db))}catch(e){alert('Kayıt yapılamadı: depolama kapalı veya dolu.')}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const now=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+const fmt=s=>(s||'').replace('T',' ');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const asc=a=>[...a].sort((x,y)=>(x.t||'').localeCompare(y.t||''));
+const T={
+ bp:{k:'bp',f:{t:'#bpT',s:'#bpS',d:'#bpD',p:'#bpP',n:'#bpN'},req:['t','s','d'],btn:'#bpBtn',x:'#bpX',lb:'Kaydet'},
+ med:{k:'meds',f:{n:'#mN',d:'#mD',h:'#mS',c:'#mC'},req:['n'],btn:'#mBtn',x:'#mX',lb:'İlaç ekle'},
+ log:{k:'logs',f:{t:'#lT',m:'#lM',n:'#lN'},req:['t','m'],btn:'#lBtn',x:'#lX',lb:'Kaydet'}};
+const ed={};
+
+function reset(y){const c=T[y];for(const f in c.f)$(c.f[f]).value='';if(c.f.t)$(c.f.t).value=now();if(y=='log')$('#lM').selectedIndex=0;ed[y]=null;$(c.btn).textContent=c.lb;$(c.x).hidden=true}
+function sub(y){const c=T[y],o={};for(const f in c.f)o[f]=$(c.f[f]).value.trim();
+ if(c.req.some(f=>!o[f]))return alert('Zorunlu alanları doldurun.');
+ if(y=='bp'&&+o.s<=+o.d)return alert('Büyük tansiyon, küçük tansiyondan yüksek olmalı.');
+ if(ed[y])Object.assign(db[c.k].find(r=>r.id==ed[y]),o);else db[c.k].push({id:uid(),...o});
+ store();reset(y);render()}
+function edit(y,id){const c=T[y],r=db[c.k].find(x=>x.id==id);if(!r)return;
+ if(y=='log'&&![...$('#lM').options].some(o=>o.value==r.m))$('#lM').add(new Option(r.m,r.m));
+ for(const f in c.f)$(c.f[f]).value=r[f]||'';ed[y]=id;$(c.btn).textContent='Güncelle';$(c.x).hidden=false;
+ tab(y=='bp'?'bp':'md');scrollTo(0,0)}
+function del(y,id){if(!confirm('Bu kayıt silinsin mi?'))return;const c=T[y];db[c.k]=db[c.k].filter(r=>r.id!=id);if(ed[y]==id)reset(y);store();render()}
+function took(id){const m=db.meds.find(x=>x.id==id);if(!m)return;db.logs.push({id:uid(),t:now(),m:m.n,n:''});store();render()}
+
+const bt=(y,id,x='')=>`<span class="a">${x}<button class="sm" onclick="edit('${y}','${id}')">Düzenle</button><button class="sm d" onclick="del('${y}','${id}')">Sil</button></span>`;
+const cls=r=>+r.s>=140||+r.d>=90?['h','Yüksek']:+r.s<90||+r.d<60?['l','Düşük']:['n','Normal'];
+const em='<div class="em">Henüz kayıt yok</div>';
+function render(){
+ $('#bpList').innerHTML=asc(db.bp).reverse().map(r=>{const[c,t]=cls(r);return`<div class="li"><div><b>${esc(r.s)}/${esc(r.d)}</b>${r.p?' · '+esc(r.p)+' nbz':''} <span class="b ${c}">${t}</span><br><small>${fmt(r.t)}${r.n?' · '+esc(r.n):''}</small></div>${bt('bp',r.id)}</div>`}).join('')||em;
+ $('#mList').innerHTML=db.meds.map(m=>`<div class="li"><div><b>${esc(m.n)}</b>${m.d?' · '+esc(m.d):''}<br><small>${esc(m.h)}${m.c?' · '+esc(m.c):''}</small></div>${bt('med',m.id,`<button class="sm ok" onclick="took('${m.id}')">Aldım</button>`)}</div>`).join('')||em;
+ const sel=$('#lM'),cur=sel.value;sel.innerHTML=db.meds.map(m=>`<option>${esc(m.n)}</option>`).join('');if(cur&&[...sel.options].some(o=>o.value==cur))sel.value=cur;
+ $('#lList').innerHTML=asc(db.logs).reverse().map(l=>`<div class="li"><div><b>${esc(l.m)}</b><br><small>${fmt(l.t)}${l.n?' · '+esc(l.n):''}</small></div>${bt('log',l.id)}</div>`).join('')||em;
+ chart()}
+
+function tab(t){document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==t));document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t=='gr')chart()}
+$('#tabs').onclick=e=>{if(e.target.dataset.t)tab(e.target.dataset.t)};
+
+function chart(){const cv=$('#cv'),W=cv.clientWidth;if(!W)return;const H=260,r=devicePixelRatio||1;cv.width=W*r;cv.height=H*r;const g=cv.getContext('2d');g.setTransform(r,0,0,r,0,0);
+ const n=+$('#rng').value,d=asc(db.bp).slice(n?-n:0);g.font='11px sans-serif';
+ if(!d.length){g.fillStyle='#64748b';g.fillText('Grafik için tansiyon kaydı ekleyin',12,24);$('#avg').textContent='';return}
+ const S=[['s','#ef4444'],['d','#2563eb'],['p','#16a34a']];
+ const v=d.flatMap(x=>S.map(q=>+x[q[0]])).filter(Boolean);
+ const mn=Math.floor((Math.min(...v)-10)/10)*10,mx=Math.ceil((Math.max(...v)+10)/10)*10,st=mx-mn>120?20:10;
+ const L=34,R=10,Tp=10,B=26,x=i=>d.length>1?L+i*(W-L-R)/(d.length-1):L+(W-L-R)/2,y=q=>Tp+(mx-q)*(H-Tp-B)/(mx-mn);
+ g.strokeStyle='#e2e8f0';g.fillStyle='#64748b';g.lineWidth=1;
+ for(let q=mn;q<=mx;q+=st){g.beginPath();g.moveTo(L,y(q));g.lineTo(W-R,y(q));g.stroke();g.fillText(q,2,y(q)+4)}
+ const dl=s=>{const p=(s||'').slice(0,10).split('-');return p[2]+'.'+p[1]};
+ g.fillText(dl(d[0].t),L,H-8);if(d.length>1){g.textAlign='right';g.fillText(dl(d[d.length-1].t),W-R,H-8);g.textAlign='left'}
+ S.forEach(([k,c])=>{g.strokeStyle=g.fillStyle=c;g.lineWidth=2;g.beginPath();let on=false;d.forEach((p,i)=>{if(!+p[k])return;const X=x(i),Y=y(+p[k]);on?g.lineTo(X,Y):g.moveTo(X,Y);on=true});g.stroke();d.forEach((p,i)=>{if(+p[k]){g.beginPath();g.arc(x(i),y(+p[k]),3,0,7);g.fill()}})});
+ const av=k=>{const a=d.map(p=>+p[k]).filter(Boolean);return a.length?Math.round(a.reduce((s,q)=>s+q,0)/a.length):'-'};
+ $('#avg').textContent=`${d.length} kayıt · Ortalama: ${av('s')}/${av('d')} · Nabız: ${av('p')}`}
+
+const ds=()=>new Date().toISOString().slice(0,10);
+function asText(){const o=['TANSİYON VE İLAÇ TAKİP RAPORU','Oluşturma: '+new Date().toLocaleString('tr-TR'),'','--- TANSİYON KAYITLARI ---'];
+ asc(db.bp).forEach(r=>o.push(`${fmt(r.t)} | ${r.s}/${r.d} | Nabız: ${r.p||'-'} | ${r.n||''}`));if(!db.bp.length)o.push('Kayıt yok');
+ o.push('','--- İLAÇLAR ---');db.meds.forEach(m=>o.push(`${m.n} | Doz: ${m.d||'-'} | Saat: ${m.h||'-'} | ${m.c||''}`));if(!db.meds.length)o.push('Kayıt yok');
+ o.push('','--- İLAÇ ALIM KAYITLARI ---');asc(db.logs).forEach(l=>o.push(`${fmt(l.t)} | ${l.m} | ${l.n||''}`));if(!db.logs.length)o.push('Kayıt yok');
+ return o.join('\n')}
+function asHtml(){const tb=(h,rows)=>`<table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${h.length}">Kayıt yok</td></tr>`}</table>`;
+ return `<h1 style="font-size:18px">Tansiyon ve İlaç Takip Raporu</h1><p>Oluşturma: ${new Date().toLocaleString('tr-TR')}</p><h3>Tansiyon</h3>${tb(['Tarih','Büyük','Küçük','Nabız','Not'],asc(db.bp).map(r=>[fmt(r.t),r.s,r.d,r.p||'',r.n||'']))}<h3>İlaçlar</h3>${tb(['İlaç','Doz','Saat','Not'],db.meds.map(m=>[m.n,m.d||'',m.h||'',m.c||'']))}<h3>İlaç alım kayıtları</h3>${tb(['Tarih','İlaç','Not'],asc(db.logs).map(l=>[fmt(l.t),l.m,l.n||'']))}`}
+async function saveFile(name,type,txt){const f=new File([txt],name,{type});
+ if(/Android|iPhone|iPad/i.test(navigator.userAgent)&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e.name=='AbortError')return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+const exTxt=()=>saveFile(`tansiyon-rapor-${ds()}.txt`,'text/plain','\ufeff'+asText());
+const exDoc=()=>saveFile(`tansiyon-rapor-${ds()}.doc`,'application/msword','<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4px}</style></head><body>'+asHtml()+'</body></html>');
+const exPdf=()=>{$('#pa').innerHTML=asHtml();print()};
+const exJson=()=>saveFile(`tansiyon-yedek-${ds()}.json`,'application/json',JSON.stringify(db));
+$('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!Array.isArray(o.bp)||!Array.isArray(o.meds)||!Array.isArray(o.logs))throw 0;if(confirm('Mevcut kayıtların yerine yedekteki veriler yüklensin mi?')){db={bp:o.bp,meds:o.meds,logs:o.logs};store();render()}}catch(x){alert('Geçersiz yedek dosyası.')}};rd.readAsText(f);e.target.value=''};
+
+$('#rng').onchange=chart;addEventListener('resize',chart);
+render();['bp','med','log'].forEach(reset);
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body></html>
